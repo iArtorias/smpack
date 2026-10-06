@@ -1,0 +1,147 @@
+<UserControl x:Class="SmpackGui.Views.ArchivesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmpackGui.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:ArchivesViewModel}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="420" MinWidth="300"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Margin="20,18,4,12">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72C;" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
+                <StackPanel>
+                    <TextBlock Text="Archives" Style="{StaticResource H1}"/>
+                    <TextBlock Text="{Binding Summary}" Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=200}" Tag="Filter files..."/>
+                <ComboBox Grid.Column="1" Margin="8,0,0,0" ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind}"/>
+            </Grid>
+            <Button DockPanel.Dock="Bottom" Margin="0,8,0,0" Command="{Binding RebuildWadCommand}" HorizontalAlignment="Left"
+                    ToolTip="Pack a folder produced by Extract (chunks + manifest.json) back into a WAD">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE8F4;" Style="{StaticResource BtnIcon}"/>
+                    <TextBlock Text="Rebuild WAD from extracted folder..."/>
+                </StackPanel>
+            </Button>
+            <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <DataGrid ItemsSource="{Binding Files}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" SelectionMode="Single" Margin="2">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="FILE" Binding="{Binding Name}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="TYPE" Binding="{Binding KindLabel}" Width="104">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="SIZE" Binding="{Binding Size, Converter={StaticResource Bytes}}" SortMemberPath="Size" Width="76">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextFaint}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Width="24" SortMemberPath="HasBackup">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="&#xE70F;" FontFamily="{StaticResource IconFont}" FontSize="11" Foreground="{StaticResource Ember}"
+                                               ToolTip="Modified, original kept as .smpack-orig"
+                                               Visibility="{Binding HasBackup, Converter={StaticResource BoolVis}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,70,0,12"/>
+
+        <Grid Grid.Column="2" Margin="4,18,20,12">
+            <TextBlock Text="Select a file to inspect it." Style="{StaticResource Dim}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding HasSelection, Converter={StaticResource BoolVis}, ConverterParameter=invert}"/>
+            <DockPanel Visibility="{Binding HasSelection, Converter={StaticResource BoolVis}}">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                        <Button Style="{StaticResource AccentButton}" Command="{Binding ExtractCommand}" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8B5;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Extract..."/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ReplaceItemCommand}" Margin="0,0,8,0"
+                                Visibility="{Binding CanReplaceItem, Converter={StaticResource BoolVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8AB;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="{Binding ReplaceItemLabel}"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding AudioReplaceCommand}" Margin="0,0,8,0" Visibility="{Binding IsAudio, Converter={StaticResource BoolVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8D6;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Replace streams..."/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding LodPatchCommand}" Margin="0,0,8,0" Visibility="{Binding IsLod, Converter={StaticResource BoolVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8AB;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Patch blocks..."/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource IconButton}" Content="&#xE838;" ToolTip="Show in Explorer" Command="{Binding RevealCommand}"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Selected.Name}" Style="{StaticResource H2}" FontSize="17" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0">
+                            <Run Text="{Binding Selected.KindLabel, Mode=OneWay}"/><Run Text=", "/><Run Text="{Binding Selected.Size, Mode=OneWay, Converter={StaticResource Bytes}}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DockPanel>
+
+                <TextBlock DockPanel.Dock="Top" Text="{Binding ReplaceHint}" Style="{StaticResource Dim}" FontSize="12" Margin="0,0,0,10"
+                           Visibility="{Binding ReplaceHint, Converter={StaticResource NotNullVis}}"/>
+
+                <Border DockPanel.Dock="Top" Background="{StaticResource Bg1}" CornerRadius="8" Padding="12,10" Margin="0,0,0,10" MaxHeight="190"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding Info, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0"
+                                 FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource TextDim}"/>
+                    </ScrollViewer>
+                </Border>
+
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding ContentsCount}" Foreground="{StaticResource TextFaint}" FontSize="12"
+                               VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    <TextBox Text="{Binding ContentsFilter, UpdateSourceTrigger=PropertyChanged, Delay=250}" Tag="Filter contents..."/>
+                </DockPanel>
+
+                <Grid>
+                    <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <DataGrid ItemsSource="{Binding Contents}" SelectedItem="{Binding SelectedRow}" AutoGenerateColumns="True" Margin="2"
+                                  SelectionMode="Single" FontFamily="{StaticResource MonoFont}" FontSize="12" CanUserReorderColumns="True"
+                                  AutoGeneratingColumn="OnAutoColumn"/>
+                    </Border>
+                    <Path Style="{StaticResource Spinner}" Width="26" Height="26" Visibility="{Binding LoadingDetails, Converter={StaticResource BoolVis}}"/>
+                </Grid>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</UserControl>

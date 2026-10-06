@@ -1,0 +1,234 @@
+<UserControl x:Class="SmpackGui.Views.AudioView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmpackGui.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:AudioViewModel}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="Space" Modifiers="Control" Command="{Binding PlayCommand}"/>
+    </UserControl.InputBindings>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="290" MinWidth="200"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="320" MinWidth="240"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Packs. -->
+        <DockPanel Margin="20,18,4,12">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72C;" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
+                <StackPanel>
+                    <TextBlock Text="Audio" Style="{StaticResource H1}"/>
+                    <TextBlock Text="{Binding PackSummary}" Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+            <TextBox DockPanel.Dock="Top" Margin="0,0,0,8" Text="{Binding PackSearch, UpdateSourceTrigger=PropertyChanged, Delay=200}" Tag="Filter packs..."/>
+            <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <ListBox ItemsSource="{Binding PackView}" SelectedItem="{Binding SelectedPack}" Margin="4" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding SizeLabel}" Foreground="{StaticResource TextFaint}" FontSize="11.5" Margin="8,0,0,0"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock DockPanel.Dock="Right" Text="&#xE70F;" FontFamily="{StaticResource IconFont}" FontSize="10" Foreground="{StaticResource Ember}"
+                                           Margin="6,0,0,0" VerticalAlignment="Center" ToolTip="A modded copy is installed (original kept as .smpack-orig)"
+                                           Visibility="{Binding Modified, Converter={StaticResource BoolVis}}"/>
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontFamily="{StaticResource MonoFont}" FontSize="12"/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,70,0,12"/>
+
+        <!--Streams. -->
+        <DockPanel Grid.Column="2" Margin="4,18,4,12">
+            <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <TextBlock Text="{Binding SelectedPack.Name, TargetNullValue='No pack selected'}" Style="{StaticResource H2}" TextTrimming="CharacterEllipsis" Margin="0,6,0,0"/>
+                <TextBlock Text="{Binding StreamsInfo}" Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" Content="Mine" IsChecked="{Binding OnlyModded}" Margin="10,0,0,0"
+                          VerticalAlignment="Center" ToolTip="Only sounds replaced in your mod"/>
+                <TextBox Text="{Binding StreamSearch, UpdateSourceTrigger=PropertyChanged, Delay=200}" Tag="Find by ID..."/>
+            </DockPanel>
+            <Grid>
+                <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <DataGrid ItemsSource="{Binding StreamView}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" SelectionMode="Single" Margin="2"
+                              EnableRowVirtualization="True">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Width="22" SortMemberPath="IsModded">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Ellipse Width="7" Height="7" Fill="{StaticResource Ember}" ToolTip="Replaced in your mod"
+                                                 Visibility="{Binding IsModded, Converter={StaticResource BoolVis}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="LENGTH" Binding="{Binding Duration}" Width="64">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="SIZE" Binding="{Binding SizeLabel}" SortMemberPath="Size" Width="76">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextFaint}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+                <Path Style="{StaticResource Spinner}" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Visibility="{Binding LoadingStreams, Converter={StaticResource BoolVis}}"/>
+            </Grid>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,70,0,12"/>
+
+        <!-- Player and actions. -->
+        <ScrollViewer Grid.Column="4" VerticalScrollBarVisibility="Auto" Margin="4,18,20,12">
+            <StackPanel>
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding ToolsMissing, Converter={StaticResource BoolVis}}"
+                        BorderBrush="{StaticResource Warning}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource AccentButton}" Command="{Binding DownloadVgmstreamCommand}" VerticalAlignment="Center"
+                                Margin="12,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE896;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Download vgmstream"/>
+                            </StackPanel>
+                        </Button>
+                        <StackPanel>
+                            <TextBlock Text="One more tool to listen" FontWeight="SemiBold"/>
+                            <TextBlock Style="{StaticResource Dim}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Text="The game's sounds are Wwise .wem streams. vgmstream (free, open source) decodes them for playback and export to MP3 or WAV."/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="20,18">
+                    <StackPanel>
+                        <DockPanel>
+                            <Border DockPanel.Dock="Left" Width="52" Height="52" CornerRadius="12" Background="{StaticResource Bg3}" Margin="0,0,14,0">
+                                <TextBlock Text="&#xE8D6;" Style="{StaticResource Icon}" FontSize="24" Foreground="{StaticResource Accent}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedTitle}" Style="{StaticResource H2}" FontSize="17"/>
+                                <TextBlock Text="{Binding Info}" Style="{StaticResource Dim}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+
+                        <Slider Margin="0,18,0,4" Minimum="0" Maximum="{Binding Player.Duration}" Value="{Binding Player.Position}"
+                                IsMoveToPointEnabled="True" IsEnabled="{Binding Player.HasMedia}"
+                                Thumb.DragStarted="OnSeekStarted" Thumb.DragCompleted="OnSeekCompleted"/>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Player.TimeLabel}" Foreground="{StaticResource TextDim}" FontFamily="{StaticResource MonoFont}"
+                                       FontSize="12" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource AccentButton}" Command="{Binding PlayCommand}" Width="44" Height="36" Padding="0"
+                                        ToolTip="Play or pause (Ctrl+Space)">
+                                    <Grid>
+                                        <TextBlock Text="&#xE768;" Style="{StaticResource Icon}" FontSize="15"
+                                                   Visibility="{Binding Player.IsPlaying, Converter={StaticResource BoolVis}, ConverterParameter=invert}"/>
+                                        <TextBlock Text="&#xE769;" Style="{StaticResource Icon}" FontSize="15"
+                                                   Visibility="{Binding Player.IsPlaying, Converter={StaticResource BoolVis}}"/>
+                                    </Grid>
+                                </Button>
+                                <Button Style="{StaticResource IconButton}" Content="&#xE71A;" Command="{Binding StopCommand}" ToolTip="Stop" Margin="6,0,0,0"/>
+                                <TextBlock Text="&#xE767;" Style="{StaticResource Icon}" Foreground="{StaticResource TextDim}" Margin="14,0,6,0" VerticalAlignment="Center"/>
+                                <Slider Width="90" Minimum="0" Maximum="1" Value="{Binding Player.Volume}" VerticalAlignment="Center"/>
+                                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding AutoPlay}" Content="Auto play" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DockPanel>
+                        <Path Style="{StaticResource Spinner}" Width="16" Height="16" HorizontalAlignment="Left" Margin="0,10,0,0"
+                              Visibility="{Binding PreviewBusy, Converter={StaticResource BoolVis}}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="EXPORT" Style="{StaticResource Label}" Margin="0,0,0,8"/>
+                        <WrapPanel>
+                            <Button Command="{Binding ExportMp3Command}" Margin="0,0,8,8" ToolTip="Decode and encode as MP3 (surround is folded to stereo)">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xEDE1;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="MP3..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ExportWavCommand}" Margin="0,0,8,8" ToolTip="Lossless 16 bit WAV with the original channels">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xEDE1;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="WAV..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ExportWemCommand}" Margin="0,0,8,8" ToolTip="The original Wwise stream, byte for byte">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xEDE1;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Original .wem..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ExportPackCommand}" Margin="0,0,8,8" ToolTip="Every sound in the list (respects the search) as MP3">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8B7;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Whole list as MP3..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource GhostButton}" Command="{Binding CopyIdCommand}" Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8C8;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Copy id"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="REPLACE IN YOUR MOD" Style="{StaticResource Label}" Margin="0,0,0,8"/>
+                        <TextBlock Style="{StaticResource Dim}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,12"
+                                   Text="Pick an MP3, WAV, FLAC, OGG or ready .wem. It is converted to Wwise Vorbis at the original sample rate and added to your mod. Building the mod rebuilds this audio pack and backs up the original. Keep the length close to the original: the game's sound banks expect it."/>
+                        <WrapPanel>
+                            <Button Style="{StaticResource AccentButton}" Command="{Binding ReplaceCommand}" Margin="0,0,8,8" Padding="14,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8B5;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Replace..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding PlayModCommand}" Margin="0,0,8,8" ToolTip="Listen to your replacement">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE768;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Play mine"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource DangerButton}" Command="{Binding RevertCommand}" Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE7A7;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Revert"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

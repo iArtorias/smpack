@@ -1,0 +1,196 @@
+<UserControl x:Class="SmpackGui.Views.ModelsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmpackGui.ViewModels"
+             xmlns:c="clr-namespace:SmpackGui.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:ModelsViewModel}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" MinWidth="180"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="380" MinWidth="260"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- WADs. -->
+        <DockPanel Margin="20,18,4,12">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72C;" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
+                <StackPanel>
+                    <TextBlock Text="Models" Style="{StaticResource H1}"/>
+                    <TextBlock Text="{Binding WadSummary}" Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+            <TextBox DockPanel.Dock="Top" Margin="0,0,0,8" Text="{Binding WadSearch, UpdateSourceTrigger=PropertyChanged, Delay=200}" Tag="Filter WADs..."/>
+            <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <ListBox ItemsSource="{Binding WadView}" SelectedItem="{Binding SelectedWad}" Margin="4" VirtualizingPanel.IsVirtualizing="True">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" FontFamily="{StaticResource MonoFont}" FontSize="12"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,70,0,12"/>
+
+        <!-- Models of the WAD. -->
+        <DockPanel Grid.Column="2" Margin="4,18,4,12">
+            <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <TextBlock Text="{Binding SelectedWad, TargetNullValue='No WAD selected'}" Style="{StaticResource H2}" TextTrimming="CharacterEllipsis" Margin="0,6,0,0"/>
+                <TextBlock Text="{Binding ModelsInfo}" Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0"/>
+            </StackPanel>
+            <TextBox DockPanel.Dock="Top" Margin="0,0,0,8" Text="{Binding ModelSearch, UpdateSourceTrigger=PropertyChanged, Delay=200}" Tag="Filter models..."/>
+            <Grid>
+                <Border Background="{StaticResource Bg1}" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <DataGrid ItemsSource="{Binding ModelView}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" SelectionMode="Single" Margin="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="MODEL" Binding="{Binding Name}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TYPE" Binding="{Binding KindLabel}" Width="84">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TRIS" Binding="{Binding Triangles, StringFormat=N0}" SortMemberPath="Triangles" Width="70">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextFaint}"/>
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+                <Path Style="{StaticResource Spinner}" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Visibility="{Binding LoadingModels, Converter={StaticResource BoolVis}}"/>
+            </Grid>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,70,0,12"/>
+
+        <!-- Preview and export. -->
+        <Grid Grid.Column="4" Margin="4,18,20,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="{Binding Selected.Name, TargetNullValue='Select a model'}" Style="{StaticResource H2}" FontSize="17" TextTrimming="CharacterEllipsis"
+                           Margin="0,6,0,0"/>
+                <TextBlock Text="{Binding SelectedDetails}" Style="{StaticResource Dim}" FontSize="12" Margin="0,4,0,10" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Border Grid.Row="1" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" ClipToBounds="True">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#1E232C" Offset="0"/>
+                        <GradientStop Color="#0F1217" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <c:ModelViewport Model="{Binding Preview}" ShowTextures="{Binding PreviewTextures}"/>
+                    <TextBlock Text="{Binding PreviewInfo}" Foreground="{StaticResource TextDim}" FontSize="11.5" Margin="12,10" TextWrapping="Wrap"
+                               VerticalAlignment="Top" HorizontalAlignment="Left" IsHitTestVisible="False" MaxWidth="520"/>
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8">
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding PreviewTextures}" Content="Textures" HorizontalAlignment="Right"
+                                  ToolTip="Show base color textures (WAD copies until the texture index is built)"/>
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding ShowHiddenParts}" Content="Hidden parts" HorizontalAlignment="Right" Margin="0,8,0,0"
+                                  Visibility="{Binding HasHiddenParts, Converter={StaticResource BoolVis}}"
+                                  ToolTip="Also show parts the game hides until needed: wounds, damage states, embedded arrows and every variant at once"/>
+                        <ComboBox ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}" Width="210" Margin="0,8,0,0" HorizontalAlignment="Right"
+                                  Visibility="{Binding HasVariants, Converter={StaticResource BoolVis}}" IsEnabled="{Binding ShowHiddenParts, Converter={StaticResource Not}}"
+                                  ToolTip="This model holds several looks of the same enemy; the game picks one per spawn"/>
+                    </StackPanel>
+                    <TextBlock Text="Drag to orbit, right drag to pan, wheel to zoom, double click to reset" Foreground="{StaticResource TextFaint}" FontSize="11"
+                               HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" IsHitTestVisible="False"
+                               Visibility="{Binding HasSelection, Converter={StaticResource BoolVis}}"/>
+                    <Path Style="{StaticResource Spinner}" Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Visibility="{Binding PreviewBusy, Converter={StaticResource BoolVis}}"/>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"
+                                Visibility="{Binding HasSelection, Converter={StaticResource BoolVis}, ConverterParameter=invert}">
+                        <TextBlock Text="&#xE81E;" FontFamily="{StaticResource IconFont}" FontSize="34" Foreground="{StaticResource BorderStrong}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Pick a WAD, then a model, to preview it in 3D." Style="{StaticResource Dim}" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="16,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="EXPORT FORMAT" Style="{StaticResource Label}" Margin="0,0,0,6"/>
+                        <ComboBox ItemsSource="{Binding Source={x:Static vm:ModelsViewModel.FormatChoices}}" SelectedItem="{Binding Format}" DisplayMemberPath="Label"/>
+                        <TextBlock Text="{Binding Format.Hint}" Foreground="{StaticResource TextFaint}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,10"/>
+                        <TextBlock Text="DETAIL LEVEL" Style="{StaticResource Label}" Margin="0,0,0,6"/>
+                        <ComboBox ItemsSource="{Binding LodChoices}" SelectedIndex="{Binding LodIndex}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding ExportTextures}" Margin="0,2,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Textures as PNG"/>
+                                <TextBlock Text="Base color and normal map, linked in the file" Foreground="{StaticResource TextFaint}" FontSize="11.5"/>
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding AllTextures}" IsEnabled="{Binding ExportTextures}" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Every material texture"/>
+                                <TextBlock Text="Also gloss, AO, height and blend layers" Foreground="{StaticResource TextFaint}" FontSize="11.5"/>
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding WorldPlacement}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Keep level placement"/>
+                                <TextBlock Text="Static props stay where they sit in the level" Foreground="{StaticResource TextFaint}" FontSize="11.5"/>
+                            </StackPanel>
+                        </CheckBox>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource AccentButton}" Command="{Binding ExportCommand}" Padding="14,8" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xEDE1;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Export model..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding ExportAllCommand}" Padding="14,8" ToolTip="Every model of this WAD (only those matching the filter, if one is set)">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8B7;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Export all..."/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Command="{Binding ReplaceCommand}" Padding="14,8" Margin="0,0,8,0"
+                                    ToolTip="Put an edited export (.glb or .gltf) back into the game through your mod. Keep the node and material names of the export.">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8B5;" Style="{StaticResource BtnIcon}"/>
+                                    <TextBlock Text="Replace with edited model..."/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding RevertCommand}" Style="{StaticResource IconButton}" Content="&#xE7A7;" ToolTip="Remove this model replacement from your mod"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding ModStatus}" Foreground="{StaticResource Accent}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Visibility="{Binding SelectedModEntry, Converter={StaticResource NotNullVis}}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

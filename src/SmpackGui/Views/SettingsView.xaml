@@ -1,0 +1,242 @@
+<UserControl x:Class="SmpackGui.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmpackGui.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:SettingsViewModel}">
+    <UserControl.Resources>
+        <Style x:Key="StatusDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Fill" Value="{StaticResource Danger}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Fill" Value="{StaticResource Success}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20,18,20,20" MaxWidth="860" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" Style="{StaticResource H1}" Margin="0,0,0,16"/>
+
+            <!-- Game. -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Style="{StaticResource StatusDot}" Tag="{Binding HasGame}"/>
+                        <TextBlock Text="Game folder" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Dim}" FontSize="12" Margin="0,4,0,10"
+                               Text="The God of War Ragnarok folder."/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseGameCommand}" Margin="8,0,0,0"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE838;" Command="{Binding OpenGameCommand}"
+                                ToolTip="Open exec\wad\pc_le" Margin="8,0,0,0"/>
+                        <TextBox Text="{Binding GameDir, Mode=OneWay}" IsReadOnly="True" Tag="Not set"/>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Detected}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" FontSize="12"
+                                        Command="{Binding DataContext.UseGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}">
+                                    <TextBlock>
+                                        <Run Text="Found:" Foreground="{StaticResource TextFaint}"/>
+                                        <Run Text="{Binding Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Tools. -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="Tools" Style="{StaticResource H2}"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,6">
+                        <Ellipse Style="{StaticResource StatusDot}" Tag="{Binding SmpackOk}"/>
+                        <TextBlock Text="smpack" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SmpackStatus}" Foreground="{StaticResource TextFaint}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseSmpackCommand}" Margin="8,0,0,0"/>
+                        <TextBox Text="{Binding SmpackPath, Mode=OneWay}" IsReadOnly="True"/>
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Dim}" FontSize="11.5" Margin="0,4,0,0"
+                               Text="The GUI ships its own smpack.exe."/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,18,0,6">
+                        <Ellipse Style="{StaticResource StatusDot}" Tag="{Binding TexconvOk}"/>
+                        <TextBlock Text="texconv" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TexconvStatus}" Foreground="{StaticResource TextFaint}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseTexconvCommand}" Margin="8,0,0,0"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource AccentButton}" Command="{Binding DownloadTexconvCommand}" Margin="8,0,0,0"
+                                ToolTip="Downloads texconv.exe from github.com/microsoft/DirectXTex (MIT license)">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE896;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Download"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBox Text="{Binding TexconvPath, Mode=OneWay}" IsReadOnly="True" Tag="Not installed"/>
+                    </DockPanel>
+                    <TextBlock FontSize="11.5" Margin="0,4,0,0" Foreground="{StaticResource TextDim}" TextWrapping="Wrap">
+                        Microsoft's DirectXTex converter. Used to encode PNG, TGA, JPG or EXR into BC1 to BC7 with full mip chains.
+                        <Hyperlink Command="{Binding OpenTexconvPageCommand}" Foreground="{StaticResource Accent}">About texconv</Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock Text="Compression quality" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="Fast" Margin="0,0,20,0" IsChecked="{Binding Quality, Converter={StaticResource EnumEq}, ConverterParameter=FAST}"/>
+                        <RadioButton Content="Balanced" Margin="0,0,20,0" IsChecked="{Binding Quality, Converter={StaticResource EnumEq}, ConverterParameter=BALANCED}"/>
+                        <RadioButton Content="Best (slow BC7)" IsChecked="{Binding Quality, Converter={StaticResource EnumEq}, ConverterParameter=BEST}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Audio tools. -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="Audio tools" Style="{StaticResource H2}"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,6">
+                        <Ellipse Style="{StaticResource StatusDot}" Tag="{Binding VgmstreamOk}"/>
+                        <TextBlock Text="vgmstream" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding VgmstreamStatus}" Foreground="{StaticResource TextFaint}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseVgmstreamCommand}" Margin="8,0,0,0"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource AccentButton}" Command="{Binding DownloadVgmstreamCommand}" Margin="8,0,0,0"
+                                ToolTip="Downloads the official Windows build from github.com/vgmstream/vgmstream (ISC license)">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE896;" Style="{StaticResource BtnIcon}"/>
+                                <TextBlock Text="Download"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBox Text="{Binding VgmstreamPath, Mode=OneWay}" IsReadOnly="True" Tag="Not installed"/>
+                    </DockPanel>
+                    <TextBlock FontSize="11.5" Margin="0,4,0,0" Foreground="{StaticResource TextDim}" TextWrapping="Wrap">
+                        Decodes the game's Wwise .wem streams for listening and for export to WAV or MP3.
+                        <Hyperlink Command="{Binding OpenVgmstreamPageCommand}" Foreground="{StaticResource Accent}">About vgmstream</Hyperlink>
+                    </TextBlock>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,18,0,6">
+                        <Ellipse Style="{StaticResource StatusDot}" Tag="{Binding WwiseOk}"/>
+                        <TextBlock Text="Wwise" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding WwiseStatus}" Foreground="{StaticResource TextFaint}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseWwiseCommand}" Margin="8,0,0,0"/>
+                        <TextBox Text="{Binding WwisePath, Mode=OneWay}" IsReadOnly="True" Tag="WwiseConsole.exe not found"/>
+                    </DockPanel>
+                    <TextBlock FontSize="11.5" Margin="0,4,0,0" Foreground="{StaticResource TextDim}" TextWrapping="Wrap">
+                        Audiokinetic Wwise (free with an Audiokinetic account) encodes your MP3, WAV, FLAC or OGG into the game's Vorbis .wem.
+                        Only needed to replace sounds with files that are not already .wem.
+                        <Hyperlink Command="{Binding OpenWwisePageCommand}" Foreground="{StaticResource Accent}">Get Wwise</Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock Text="MP3 bitrate" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                    <ComboBox ItemsSource="{Binding BitrateChoices}" SelectedItem="{Binding Mp3Kbps}" Width="140" HorizontalAlignment="Left" ItemStringFormat="{}{0} kbps"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Storage. -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="Storage" Style="{StaticResource H2}"/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding StoreInGameFolder}" Margin="0,14,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Keep the cache and new mods in the game folder"/>
+                            <TextBlock Text="Uses [game]\smpack\cache and [game]\smpack\mods. Off setting keeps them in your user profile and documents"
+                                       Foreground="{StaticResource TextFaint}" FontSize="11.5" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </CheckBox>
+                    <TextBlock Text="Mod projects" FontWeight="SemiBold" Margin="0,14,0,6"/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Command="{Binding BrowseProjectsCommand}" Margin="8,0,0,0"/>
+                        <TextBox Text="{Binding ProjectsDir, Mode=OneWay}" IsReadOnly="True"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,16,0,0">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="Open" Command="{Binding OpenCacheCommand}" Margin="0,0,8,0"/>
+                            <Button Content="Clear" Command="{Binding ClearCacheCommand}"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Preview cache" FontWeight="SemiBold"/>
+                            <TextBlock Foreground="{StaticResource TextDim}" FontSize="12">
+                                <Run Text="{Binding CacheSize, Mode=OneWay}"/><Run Text=" in "/><Run Text="{Binding CacheDir, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="How it works" Style="{StaticResource H2}"/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style x:Key="StepNumber" TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontSize" Value="12.5"/>
+                                <Setter Property="LineHeight" Value="20"/>
+                            </Style>
+                            <Style x:Key="StepText" TargetType="TextBlock" BasedOn="{StaticResource Dim}">
+                                <Setter Property="FontSize" Value="12.5"/>
+                                <Setter Property="LineHeight" Value="20"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Margin" Value="0,0,0,8"/>
+                            </Style>
+                        </Grid.Resources>
+
+                        <TextBlock Grid.Row="0" Text="1" Style="{StaticResource StepNumber}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource StepText}">
+                <Run Text="Pick." FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
+                On Textures, Models or Audio select what you want to change and choose Replace.
+                An image for a texture (or drag it onto the preview), an edited glTF export for a model, an audio file for a sound.
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="1" Text="2" Style="{StaticResource StepNumber}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource StepText}">
+                <Run Text="Convert." FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
+                Images get the texture's exact format and a full mip chain, models the game's vertex layout for every LOD,
+                sounds are encoded to Wwise .wem. Everything is added to your mod.
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2" Text="3" Style="{StaticResource StepNumber}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource StepText}">
+                <Run Text="Build and install." FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
+                On My mod. Streamed textures and geometry go into patch packs that the game loads before its own,
+                registered in 'exec\boot-options.json'. WADs and audio packs are rebuilt from the originals, and every file that gets rewritten is backed up first.
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="3" Text="4" Style="{StaticResource StepNumber}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource StepText}" Margin="0">
+                <Run Text="Undo." FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
+                On Installed. Remove a patch, restore a single file or return to the unmodded game at any time.
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

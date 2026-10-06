@@ -1,0 +1,11 @@
+bin/
+obj/
+*.user
+.vs/
+publish/
+release/
+*.whl
+*.tar.gz
+*.7z
+*.zip
+*.rar

@@ -1,0 +1,9 @@
+.vs*/
+build*/
+out*/
+*.pkl
+*.whl
+*.tar.gz
+*.7z
+*.zip
+*.rar
