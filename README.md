@@ -1,5 +1,5 @@
 <p align="left">
-  <img src="images/logo.png" alt="God of War Ragnarök AIO modding tool" width="75%">
+  <img src="images/logo.png" alt="God of War Ragnarök AIO modding tool" width="10%">
 </p>
 
 ---
